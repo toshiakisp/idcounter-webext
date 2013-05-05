@@ -77,6 +77,7 @@ appendFIDCStyle();
 
 // 末尾にステータス表示
 var target = document.evaluate('/html/body/form[@action and not(@enctype)]/br[@clear="left"]',document,null,XPathResult.FIRST_ORDERED_NODE_TYPE ,null).singleNodeValue;
+if (!target) target = document.evaluate('/html/body/form[@action and not(@enctype)]/hr/preceding-sibling::*[1]',document,null,XPathResult.FIRST_ORDERED_NODE_TYPE ,null).singleNodeValue;
 appendFIDCStatus(target);
 
 //レスの動的追加時に再スキャンするようイベント登録 (赤福の「続きを読む」などへの対応)

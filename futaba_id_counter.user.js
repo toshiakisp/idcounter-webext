@@ -1,11 +1,13 @@
 // ==UserScript==
 // @name           Futaba ID Counter
-// @version        0.20110319
+// @version        0.20111113
 // @description    ID表示のスレにIDカウンタを追加したりする
 // @namespace      http://jun.2chan.net/
 // @include        http://*.2chan.net/*/res/*.htm
 // @include        unmht://www.nijibox2.com/http.5/futalog/*/src/*.mht/
+// @include        http://www.nijibox2.com/futalog/*/src/*.mht
 // @include        http://nijibox.ohflip.com/futalog/*/src/*.mht
+// @include        http://magmag.ath.cx/cgi-bin/futaba/log/*/res/*.htm
 // ==/UserScript==
 
 
@@ -317,7 +319,7 @@ function putbackNodeInnerHTML(node) {
 //レスに埋め込んだ物を消去
 function clearId() {
   destoroyPopup();
-  var es = document.evaluate('//*[@class="gm_fidc_a" or @class="gm_fidc_faketext" or @class="gm_fidc_popup"]',document,null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null);
+  var es = document.evaluate('//*[@class="gm_fidc_a" or @class="gm_fidc_faketext" or contains(" "+@class+" "," gm_fidc_popup ")]',document,null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null);
   for(var i=0; i < es.snapshotLength; i++){
     es.snapshotItem(i).parentNode.removeChild(es.snapshotItem(i));
   }

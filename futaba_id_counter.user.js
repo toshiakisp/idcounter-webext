@@ -2,7 +2,10 @@
 // @name           Futaba ID Counter
 // @version        0.20111113
 // @description    ID表示のスレにIDカウンタを追加したりする
-// @namespace      http://jun.2chan.net/
+// @namespace      https://github.com/toshiakisp
+// @author         toshiaki.sp
+// @license        MIT
+// @downloadURL    https://github.com/toshiakisp/idcounter-userscript/raw/master/futaba_id_counter.user.js
 // @include        http://*.2chan.net/*/res/*.htm
 // @include        unmht://www.nijibox2.com/http.5/futalog/*/src/*.mht/
 // @include        http://www.nijibox2.com/futalog/*/src/*.mht

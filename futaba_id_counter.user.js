@@ -1,16 +1,18 @@
 // ==UserScript==
 // @name           Futaba ID Counter
+// @version        0.20110319
 // @description    ID表示のスレにIDカウンタを追加したりする
 // @namespace      http://jun.2chan.net/
 // @include        http://*.2chan.net/*/res/*.htm
 // @include        unmht://www.nijibox2.com/http.5/futalog/*/src/*.mht/
+// @include        http://nijibox.ohflip.com/futalog/*/src/*.mht
 // ==/UserScript==
 
 
 //**** 変更メモ ****/
 //
-// + (レス文からの)単発IDのIDポップでジャンプ用カウンタを表示させる(＆単発IDのカウンタを修正)
-// + ID初出自のポップアップ表示を全レスにするか否かの設定(ID_POPUP_FIRST_OTHERS)
+// + [10/11/12] レスのID検出バグの修正(ID板でアニメーションGIFのレスで失敗していた件)
+// + [11/02/10] junのHTML構造変化への対応(ID集計表示の追加)＆将来の再変化でのエラー回避処置
 //
 //**** 機能の説明 ****/
 //
@@ -77,8 +79,8 @@ appendFIDCStyle();
 
 // 末尾にステータス表示
 var target = document.evaluate('/html/body/form[@action and not(@enctype)]/br[@clear="left"]',document,null,XPathResult.FIRST_ORDERED_NODE_TYPE ,null).singleNodeValue;
-if (!target) target = document.evaluate('/html/body/form[@action and not(@enctype)]/hr/preceding-sibling::*[1]',document,null,XPathResult.FIRST_ORDERED_NODE_TYPE ,null).singleNodeValue;
-appendFIDCStatus(target);
+if (!target) { target = document.evaluate('/html/body/form[@action and not(@enctype)]/hr[following-sibling::div[@class="delform"]]/preceding-sibling::*[1]',document,null,XPathResult.FIRST_ORDERED_NODE_TYPE ,null).singleNodeValue; }
+if (target) appendFIDCStatus(target);
 
 //レスの動的追加時に再スキャンするようイベント登録 (赤福の「続きを読む」などへの対応)
 var form = document.evaluate('/html/body/form[@action and not(@enctype)]',document,null,XPathResult.FIRST_ORDERED_NODE_TYPE ,null).singleNodeValue;
@@ -99,11 +101,6 @@ if (form) {
 }
 
 scanId();
-
-if (USE_ID_POPUP_FOR_TEXT) {
-  var e = document.getElementsByTagName('body')[0];
-  e.addEventListener('mousemove',onMouseMove,false);
-}
 
 /**** 関数 ****/
 
@@ -156,6 +153,7 @@ function scanThreakiId(){
   var nn = text.nodeValue.indexOf(' No.',n+3);
   if (nn<0) {
     nn = text.nodeValue.indexOf(' ',n+3);//No.が次のテキストノードの場合
+    if (nn<0) nn = text.nodeValue.length;
   }else{
     text.splitText(nn+1);
   }
@@ -187,6 +185,10 @@ function scanId() {
     var n = t.nodeValue.indexOf(identifier+':');
     var nn = t.nodeValue.indexOf(' No.',n);
     if (nn<0) nn = t.nodeValue.indexOf(' ',n+3);//No.が次のテキストノードの場合など
+    if (nn<0) {
+      nn = t.nodeValue.length;//空白が無い時はテキストノードの終わりまで(AnimationGIFコメントが入る場合がある)
+      t.nodeValue = t.nodeValue + ' ';
+    }
     var id = t.nodeValue.substring(n+3,nn);
     var no = document.evaluate('preceding-sibling::input',t,null,XPathResult.FIRST_ORDERED_NODE_TYPE,null).singleNodeValue.name;
     if (id in idCounts) {

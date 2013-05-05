@@ -53,3 +53,51 @@ ID表示のスレにIDカウンタ※を追加したりする [user script](http
 
 * ローカルファイルに対して使うには greasemonkey.fileIsGreaseable を true に。
 
+## カスタマイズ
+
+挙動は設定ボタンから多少変更が出来る。この設定の初期値は、スクリプト冒頭の大文字変数を*エディタで編集*すれば変更することができる。
+
++ USE\_THREAKI\_SIGN:
+  スレあきのIDに印を付ける
+  (_true_)
+
++ USE\_SOLO\_ID\_EXCEPTION:
+  単発IDにはIDカウンタを付けない
+  (_true_)
+
++ USE\_ID\_JUMP\_ON\_CLICK
+  IDカウンタクリックで次/前(Shift)のID出現箇所へスクロールする
+  (_true_)
+
+同IDレスのポップアップ関係
+
++ USE\_ID\_POPUP:
+  IDカウンタのマウスオーバーで同IDのレスをポップアップ表示
+  (_true_)
+
++ USE\_ID\_POPUP\_FOR\_TEXT:
+  テキスト中のIDからポップアップ
+  (_true_)
+
++ ID\_POPUP\_FIRST\_OTHERS:
+  最初のレスのIDポップアップでは他の全てのレス表示
+  (_true_)
+
++ ID\_POPUP\_ALWAYS\_OTHERS:
+  IDポップアップは常に他の全てのレス表示（最初のレスだけでなく）
+  (_false_)
+
+パラメータ
+
++ ID\_POPUP\_IMG\_SCALE:
+  ポップアップ中の画像のサイズ比
+  _(0.5)_
+
++ ID\_POPUP\_FONTSIZE:
+  ポップアップの文字サイズ
+  _'75%'_
+
++ THREAKI\_SIGN:
+  スレあきのIDに付ける印
+  (_'*'_)
+

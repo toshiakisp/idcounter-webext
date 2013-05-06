@@ -6,6 +6,8 @@ ID表示のスレにIDカウンタ※を追加したりする [user script](http
 
 赤福の「続きを読む」にも対応 (稀にバグる可能性あり?)
 
+![screenshot](screenshot.jpg)
+
 ## 機能
 
 + IDカウンタ付加:

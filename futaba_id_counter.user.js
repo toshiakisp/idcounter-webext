@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name           Futaba ID Counter
-// @version        0.20111113
+// @version        0.20130703
 // @description    ID表示のスレにIDカウンタを追加したりする
 // @namespace      https://github.com/toshiakisp
 // @author         toshiaki.sp

@@ -30,18 +30,15 @@ var ID_POPUP_FONTSIZE = '75%'; //ポップアップの文字サイズ
 // 赤福騙し(旧式)
 var USE_AKAFUKU_ID_CITE = false; // >ID:xxx 形式引用でも赤福で無理矢理ポップアップ
 
+var WORK_IN_NON_ID_THREAD = true; // 非IDスレでもIDをカウントしたりIDレスの追加に備えたりする
+
 ////
 
 var identifier = 'ID';
 var idcThreaki = scanThreakiId();
-if (!idcThreaki) return; // スレあきID/IPが見つからなければなにもせず終了
-
-appendFIDCStyle();
-
-// 末尾にステータス表示
-var target = document.evaluate('/html/body/form[@action and not(@enctype)]/br[@clear="left"]',document,null,XPathResult.FIRST_ORDERED_NODE_TYPE ,null).singleNodeValue;
-if (!target) { target = document.evaluate('/html/body/form[@action and not(@enctype)]/hr[following-sibling::div[@class="delform"]]/preceding-sibling::*[1]',document,null,XPathResult.FIRST_ORDERED_NODE_TYPE ,null).singleNodeValue; }
-if (target) appendFIDCStatus(target);
+if (!idcThreaki && !WORK_IN_NON_ID_THREAD) {
+  return; // スレあきID/IPが見つからなければなにもせず終了
+}
 
 //レスの動的追加時に再スキャンするようイベント登録 (赤福の「続きを読む」などへの対応)
 var form = document.evaluate('/html/body/form[@action and not(@enctype)]',document,null,XPathResult.FIRST_ORDERED_NODE_TYPE ,null).singleNodeValue;
@@ -129,15 +126,29 @@ function scanThreakiId(){
 function scanId() {
   //console.time('scanId()');
 
+  function tryAppendFIDCParts() {
+    if (_appended) return;
+    _appended = true;
+    appendFIDCStyle();
+    // 末尾にステータス表示
+    var target = document.evaluate('/html/body/form[@action and not(@enctype)]/br[@clear="left"]',document,null,XPathResult.FIRST_ORDERED_NODE_TYPE ,null).singleNodeValue;
+    if (!target) { target = document.evaluate('/html/body/form[@action and not(@enctype)]/hr[following-sibling::div[@class="delform"]]/preceding-sibling::*[1]',document,null,XPathResult.FIRST_ORDERED_NODE_TYPE ,null).singleNodeValue; }
+    if (target) appendFIDCStatus(target);
+  }
+  var _appended = false
+
   var idCounts = {};
   var idFirstNodes = {};
   var idOtherNodes = {};
-  var numUniqId = 1;
+  var numUniqId = 0;
 
   idcThreaki = idcThreaki || scanThreakiId();
-  var idThreaki = idcThreaki.getAttribute('__gm_fidc_id');
-  idCounts[idThreaki] = 1;
-  idFirstNodes[idThreaki] = idcThreaki.previousSibling;
+  var idThreaki = (idcThreaki ? idcThreaki.getAttribute('__gm_fidc_id') : '');
+  if (idThreaki) {
+    numUniqId ++;
+    idCounts[idThreaki] = 1;
+    idFirstNodes[idThreaki] = idcThreaki.previousSibling;
+  }
 
   //ID探索&カウンタ挿入ループ(破壊的)
   var eRes = document.evaluate('/html/body/form[@action and not(@enctype)]/table//td/input[@type="checkbox"]/following-sibling::text()[contains(.,"'+identifier+':")]',document,null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null);
@@ -164,6 +175,7 @@ function scanId() {
     if (USE_AKAFUKU_ID_CITE) {//やっつけ：透明テキストを仕込んで赤福にID引用でもポップアップさせる
       e = document.evaluate('blockquote[not(font[@class="gm_fidc_faketext"])]',t.parentNode,null,XPathResult.FIRST_ORDERED_NODE_TYPE,null).singleNodeValue;
       if (e) {
+	tryAppendFIDCParts();
 	var fake = document.createElement('font');
 	fake.setAttribute('class','gm_fidc_faketext');
 	fake.innerHTML = '<br/>'+identifier+':'+id+' No.'+no;
@@ -178,6 +190,7 @@ function scanId() {
       continue; //既にIDカウンタがある場合はそのままにしておく
     }
     if ( idCounts[id] > 1 ) {
+      tryAppendFIDCParts();
       appendIdCounter(t,id,idCounts[id]);
     }
   }
@@ -185,11 +198,13 @@ function scanId() {
   //あらためて初出IDへのカウンタ挿入
   //初出にはレス数情報付きで ※countTotalValidIDC()が参照する
   for (var id in idFirstNodes) {
+    tryAppendFIDCParts();
     appendIdCounter(idFirstNodes[id],id,1,idCounts[id]);
   }
   if (!USE_ID_POPUP) {//ポップアップ無しの時は"全xレス"を全てに付ける
     for (var id_c in idOtherNodes) {
       var id  = id_c.substring(0,id_c.lastIndexOf('-'));
+      tryAppendFIDCParts();
       appendIdCounter(idOtherNodes[id_c],id,-1,idCounts[id]);//ラベルの更新だけ
     }
   }
@@ -205,7 +220,7 @@ function scanId() {
   //テキスト中のIDポップアップ用イベント登録
   //ここで行うのはUSE_ID_POPUP_FOR_TEXTが動的に変わる可能性があるため。
   e = document.getElementsByTagName('body')[0];
-  if (USE_ID_POPUP_FOR_TEXT) {
+  if (USE_ID_POPUP_FOR_TEXT && numUniqId > 0) {
     e.addEventListener('mousemove',onMouseMove,false);
   } else {
     e.removeEventListener('mousemove',onMouseMove,false);
@@ -218,7 +233,7 @@ function scanId() {
 //・count <= 0 時は関係情報は設定しない
 //・optTotal 次第でカウンタを透明にする(USE_SOLO_ID_EXCEPTION)
 function appendIdCounter(target, id, count, optTotal) {
-  var idThreaki = (idcThreaki ? idcThreaki.getAttribute('__gm_fidc_id') : id);
+  var idThreaki = (idcThreaki ? idcThreaki.getAttribute('__gm_fidc_id') : '');
   var label = '[' + count + (USE_THREAKI_SIGN && id==idThreaki ? THREAKI_SIGN+'] ' : '] ');
   var e;
   if (target.nextSibling.className == 'gm_fidc_a') {
@@ -299,9 +314,13 @@ function clearAll() {
   e.parentNode.removeChild(e);
   e = document.evaluate('/html/body/form[@action and not(@enctype)]',document,null,XPathResult.FIRST_ORDERED_NODE_TYPE ,null).singleNodeValue;;
   e.removeEventListener('DOMNodeInserted',idScanOnModified,false);
+  e = document.getElementsByTagName('body')[0];
+  e.removeEventListener('mousemove',onMouseMove,false);
 }
 
 function appendFIDCStatus(target) {
+  var e = document.getElementById('gm_fidc_status');
+  if (e) return;
   var div = document.createElement('div');
   div.setAttribute('id','gm_fidc_status');
   div.innerHTML='<b>'+identifier+'カウンタ:</b> ユニーク<span id="gm_fidc_uid">?</span> (単発<span id="gm_fidc_soloid">?</span>)';//
@@ -384,7 +403,9 @@ function togglePopupConf(ev) {
 //スタイル埋め込み
 function appendFIDCStyle(){
   var h = document.getElementsByTagName('head')[0];
-  var style = document.createElement('style');
+  var style = document.getElementById('gm_fidc_style');
+  if (style) return;
+  style = document.createElement('style');
   style.setAttribute('id','gm_fidc_style');
   style.innerHTML='div#gm_fidc_status {font-size:small;}'
     +'div.gm_fidc_popup {position:absolute; z-index:402; border: 1px solid #117743; background-color:#FFFFEE; font-size:75%;}'

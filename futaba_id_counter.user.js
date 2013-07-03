@@ -578,6 +578,7 @@ function createPopup(params){
   //console.time('createPopup()');
 
   //ポップアップ用要素の作成
+  appendFIDCStyle(); //スタイル確認
   var newPopupElement =  document.createElement('div');
   newPopupElement.setAttribute('class','gm_fidc_popup');
   newPopupElement.setAttribute('__gm_fidc_id',id);

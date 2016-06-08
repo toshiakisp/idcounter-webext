@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name           Futaba ID Counter
-// @version        0.20130703
+// @version        0.20160608
 // @description    ID表示のスレにIDカウンタを追加したりする
 // @namespace      https://github.com/toshiakisp
 // @author         toshiaki.sp
@@ -35,6 +35,24 @@ var WORK_IN_NON_ID_THREAD = true; // 非IDスレでもIDをカウントしたり
 
 ////
 
+// スレのHTML構造の要点(XPath)
+var xpathMainForm = '/html/body/form[@action and not(@enctype)]';
+var xpathThreContainer = xpathMainForm+'/div[@class="thre"]';
+var xpathThreInput = xpathThreContainer+'/input[@type="checkbox"]';
+var xpathReplyTables = xpathThreContainer+'/table';
+var xpathAppendStatusAfter = xpathMainForm+'/hr[following-sibling::div[@class="delform"]]/preceding-sibling::*[1]';
+
+// XPathのテスト＆旧仕様への対応
+if (!document.evaluate(xpathThreContainer,document,null,XPathResult.FIRST_ORDERED_NODE_TYPE,null).singleNodeValue) {
+  // 2016/5月末のレイアウト変更の前の様式に調整
+  xpathThreContainer = xpathMainForm;
+  xpathThreInput = xpathThreContainer+'/input[@type="checkbox"]';
+  xpathReplyTables = xpathThreContainer+'/table';
+}
+if (!document.evaluate(xpathAppendStatusAfter,document,null,XPathResult.FIRST_ORDERED_NODE_TYPE,null).singleNodeValue) {
+  xpathAppendStatusAfter = xpathMainForm+'/br[@clear="left"]';
+}
+
 var identifier = 'ID';
 var idcThreaki = scanThreakiId();
 if (!idcThreaki && !WORK_IN_NON_ID_THREAD) {
@@ -42,7 +60,7 @@ if (!idcThreaki && !WORK_IN_NON_ID_THREAD) {
 }
 
 //レスの動的追加時に再スキャンするようイベント登録 (赤福の「続きを読む」などへの対応)
-var form = document.evaluate('/html/body/form[@action and not(@enctype)]',document,null,XPathResult.FIRST_ORDERED_NODE_TYPE ,null).singleNodeValue;
+var form = document.evaluate(xpathMainForm,document,null,XPathResult.FIRST_ORDERED_NODE_TYPE ,null).singleNodeValue;
 if (form) {
   var timer;
   function idScanOnModified(ev) {
@@ -99,9 +117,11 @@ function getNodeBefore(node) {
 
 
 function scanThreakiId(){
-  var text = document.evaluate('/html/body/form[@action and not(@enctype)]/input[@type="checkbox"]/following-sibling::text()[contains(normalize-space(.)," ID:") or starts-with(normalize-space(.),"ID:")]',document,null,XPathResult.FIRST_ORDERED_NODE_TYPE ,null).singleNodeValue;
+  var xpathThreSign = xpathThreInput+'/following-sibling::text()[contains(normalize-space(.)," ID:") or starts-with(normalize-space(.),"ID:")]';
+  var text = document.evaluate(xpathThreSign,document,null,XPathResult.FIRST_ORDERED_NODE_TYPE ,null).singleNodeValue;
   if (!text) {
-    text = document.evaluate('/html/body/form[@action and not(@enctype)]/input[@type="checkbox"]/following-sibling::text()[contains(normalize-space(.)," IP:") or starts-with(normalize-space(.),"IP:")]',document,null,XPathResult.FIRST_ORDERED_NODE_TYPE ,null).singleNodeValue;
+    xpathThreSign = xpathThreSign.replace(/ID:/g,'IP:');
+    text = document.evaluate(xpathThreSign,document,null,XPathResult.FIRST_ORDERED_NODE_TYPE ,null).singleNodeValue;
     if (!text) return null;
     identifier = 'IP';
   }else{
@@ -132,8 +152,7 @@ function scanId() {
     _appended = true;
     appendFIDCStyle();
     // 末尾にステータス表示
-    var target = document.evaluate('/html/body/form[@action and not(@enctype)]/br[@clear="left"]',document,null,XPathResult.FIRST_ORDERED_NODE_TYPE ,null).singleNodeValue;
-    if (!target) { target = document.evaluate('/html/body/form[@action and not(@enctype)]/hr[following-sibling::div[@class="delform"]]/preceding-sibling::*[1]',document,null,XPathResult.FIRST_ORDERED_NODE_TYPE ,null).singleNodeValue; }
+    var target = document.evaluate(xpathAppendStatusAfter,document,null,XPathResult.FIRST_ORDERED_NODE_TYPE ,null).singleNodeValue;
     if (target) appendFIDCStatus(target);
   }
   var _appended = false
@@ -152,7 +171,7 @@ function scanId() {
   }
 
   //ID探索&カウンタ挿入ループ(破壊的)
-  var eRes = document.evaluate('/html/body/form[@action and not(@enctype)]/table//td/input[@type="checkbox"]/following-sibling::text()[contains(.,"'+identifier+':")]',document,null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null);
+  var eRes = document.evaluate(xpathReplyTables+'//td/input[@type="checkbox"]/following-sibling::text()[contains(.,"'+identifier+':")]',document,null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null);
   for (var i=0; i < eRes.snapshotLength; i++) {
     var t = eRes.snapshotItem(i);
     var n = t.nodeValue.indexOf(identifier+':');
@@ -313,7 +332,7 @@ function clearAll() {
   e.parentNode.removeChild(e);
   e = document.getElementById('gm_fidc_style');
   e.parentNode.removeChild(e);
-  e = document.evaluate('/html/body/form[@action and not(@enctype)]',document,null,XPathResult.FIRST_ORDERED_NODE_TYPE ,null).singleNodeValue;;
+  e = document.evaluate(xpathMainForm,document,null,XPathResult.FIRST_ORDERED_NODE_TYPE ,null).singleNodeValue;;
   e.removeEventListener('DOMNodeInserted',idScanOnModified,false);
   e = document.getElementsByTagName('body')[0];
   e.removeEventListener('mousemove',onMouseMove,false);
@@ -494,13 +513,13 @@ function findFirstValidIDC(id) {
   var e = document.getElementById('gm_fidc_id'+id+'_1');//この方が速い
   if (e) return e;
   return document.evaluate(
-    '/html/body/form[@action and not(@enctype)]//td/a[@class="gm_fidc_a"][@__gm_fidc_id="'+id+'"]',
+    xpathReplyTables+'//td/a[@class="gm_fidc_a"][@__gm_fidc_id="'+id+'"]',
     document,null,XPathResult.FIRST_ORDERED_NODE_TYPE ,null
   ).singleNodeValue;
 }
 function findValidIDCWithNo(id,no) {
   return document.evaluate(
-    '/html/body/form[@action and not(@enctype)]'
+    xpathReplyTables
       +'//td/input[@name="'+no+'"]'
       +'/following-sibling::a[@class="gm_fidc_a"][@__gm_fidc_id="'+id+'"]',
     document,null,XPathResult.FIRST_ORDERED_NODE_TYPE ,null
@@ -511,7 +530,7 @@ function countTotalValidIDC(id) {
   var c = e.getAttribute('__gm_fidc_total');
   if (c) return c;
   return document.evaluate(
-    'count(/html/body/form[@action and not(@enctype)]/table//td/a[@__gm_fidc_id="'+id+'"])',
+    'count('+xpathReplyTables+'//td/a[@__gm_fidc_id="'+id+'"])',
     document,null,XPathResult.NUMBER_TYPE,null
   ).numberValue;
 }

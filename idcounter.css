@@ -1,0 +1,70 @@
+div#webext_fidc_status {
+  font-size: small;
+}
+
+div.webext_fidc_popup {
+  position: absolute;
+  z-index: 402;
+  border: 1px solid #117743;
+  background-color: #FFFFEE;
+  font-size: 0.75rem;
+}
+
+div.webext_fidc_popup>table {
+  border: 0px;
+}
+div.webext_fidc_popup>div:first-child {
+  background-color: #117743;
+  color: #ffffee;
+  margin: 0px;
+  padding: 2px;
+}
+div.webext_fidc_popup>table tr>td {
+  vertical-align: top;
+  background-color: #f0e0d6;
+}
+div.webext_fidc_popup>table tr>td:first-child {
+  background-color: #FFFFEE;
+}
+div.webext_fidc_popup>table tr>td input {
+  display: none;
+}
+font.webext_fidc_faketext {
+  display: none;
+}
+a.webext_fidc_a {
+  color: #117743;
+  cursor: pointer;
+}
+a.webext_fidc_aj {
+  color: blue;
+  cursor: pointer;
+  text-decoration: underline;
+}
+a.webext_fidc_aj:hover {
+  color: red;
+}
+a.webext_fidc_a_btn {
+  color: blue;
+ cursor: pointer;
+}
+a.webext_fidc_a_btn:hover {
+  color: red;
+}
+a.webext_fidc_a_btn:before {
+  content: " [";
+  color: #800000;
+}
+a.webext_fidc_a_btn:after {
+  content: "] ";
+  color: #800000;
+}
+a.webext_fidc_conf_enb{
+  color: #800000;
+  cursor: pointer;
+}
+a.webext_fidc_conf_dis{
+  color: #a0a0a0;
+  cursor: pointer;
+}
+

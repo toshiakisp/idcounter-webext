@@ -1,0 +1,48 @@
+
+body {
+  -moz-user-select: none;
+  user-select: none;
+}
+
+.box-orient-vertical {
+  display: flex;
+  flex-direction: column;
+}
+.box-orient-horizontal {
+  display: flex;
+  flex-direction: row;
+}
+
+.align-center {
+  align-items: center;
+}
+.align-end {
+  align-items: flex-end;
+}
+.align-start {
+  align-items: flex-start;
+}
+.align-strech {
+  align-items: stretch;
+}
+
+
+.box-orient-vertical.sub {
+  margin-left: 1em;
+  margin-bottom: 0.5em;
+}
+
+.box-orient-vertical>*{
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+.box-orient-horizontal>*{
+  margin-left: 2px;
+  margin-right: 2px;
+}
+
+.border {
+  padding: 5px;
+  border: 2px groove lightgray;
+}
+

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Options</title>
+    <link href="options.css" rel="stylesheet">
+  </head>
+
+  <body>
+
+    <h3>設定 <span style="font-weight: normal; font-size: small;">(設定変更の反映にはスレのリロードが必要)</span></h3>
+    <form>
+      <div class="box-orient-vertical border">
+        <label>ID/IPのカウンタ：</label>
+        <div class="box-orient-vertical sub">
+          <label><input type="checkbox" name="counter.no-single">単発には付けない</label>
+          <label><input type="checkbox" name="counter.click-to-jump">クリックで次/前へ</label>
+          <label>スレ立てIDに印：<input type="text" name="counter.threaki-sign" placeholder="Text..." size="4"></label>
+        </div>
+        <label>同ID/IPのポップアップ：</label>
+        <div class="box-orient-vertical sub">
+          <div class="box-orient-horizontal">
+            <label>内容：</label>
+            <label><input type="radio" name="popup.content-type" value="1">最初のレス</label>
+            <label><input type="radio" name="popup.content-type" value="1-other">[1]からは他の全レス</label>
+            <label><input type="radio" name="popup.content-type" value="other">常に他の全レス</label>
+            <label><input type="radio" name="popup.content-type" value="all">常に全レス</label>
+          </div>
+          <label>フォントサイズ：<input type="text" name="popup.font-size" placeholder="数値..." pattern="[0-9](\.[0-9]*)?" size="4"> rem</label>
+          <label>サムネ画像スケール：<input type="text" name="popup.image-scale" placeholder="数値..." pattern="[0-9](\.[0-9]*)?" size="4"> 倍</label>
+          <label><input type="checkbox" name="popup.from-counter">カウンタから開く</label>
+          <label><input type="checkbox" name="popup.from-text">テキスト中から開く</label>
+        </div>
+      </div>
+      <div class="box-orient-vertical align-end">
+        <div class="box-orient-horizontal">
+          <button type="button" id="save-button" disabled="true">保存</button>
+          <button type="button" id="cancel-button" disabled="true">キャンセル</button>
+        </div>
+      </div>
+    </form>
+
+    <script src="options.js"></script>
+
+  </body>
+
+</html>
+

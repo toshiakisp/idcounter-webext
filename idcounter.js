@@ -912,7 +912,7 @@ function handleTextHover(node) {
     ];
   }else{
     reIdentifiers = [
-      /\b(IP:)([-_A-Za-z0-9.*)(]+)(?:\s+No\.([1-9][0-9]+))?/,
+      /\b(IP:)([-_A-Za-z0-9:.*)(]+)(?:\s+No\.([1-9][0-9]+))?/,
     ];
   }
   var sign, id, no;

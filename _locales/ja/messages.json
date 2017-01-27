@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "ふたばIDカウンター",
+    "description": "Name of the extension."
+  },
+
+  "extensionDescription": {
+    "message": "ふたばのスレでID/IPに出現回数カウンタを追加する",
+    "description": "Description of the extension."
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "Futaba ID counter",
+    "description": "Name of the extension."
+  },
+
+  "extensionDescription": {
+    "message": "Inject ID/IP counters for threads on Futaba (2chan.net).",
+    "description": "Description of the extension."
+  }
+}

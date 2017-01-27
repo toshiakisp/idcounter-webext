@@ -1,0 +1,51 @@
+{
+  "manifest_version": 2,
+  "version": "0.1",
+  "default_locale": "en",
+  "name": "__MSG_extensionName__",
+  "description": "__MSG_extensionDescription__",
+  "author": "toshiaki.sp",
+  "homepage_url": "https://toshiakisp.github.io/akahuku-firefox-sp/",
+
+  "applications": {
+	"gecko": {
+	  "id": "idcounter-webext@toshiakisp.github.io",
+	  "strict_min_version": "45.0a1",
+	  "strict_max_version": "52.*",
+	  "update_url": "https://toshiakisp.github.io/akahuku-firefox-sp/idcounter_updates.json"
+	}
+  },
+
+  "icons": {
+    "48": "icons/idcounter-48.png",
+    "96": "icons/idcounter-96.png"
+  },
+
+  "permissions": [
+    "storage"
+  ],
+
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.2chan.net/*/res/*.htm*"
+      ],
+      "css": [ "idcounter.css" ],
+      "js": [ "idcounter.js" ],
+	  "run_at": "document_end"
+    }
+  ],
+
+  "background": {
+    "scripts": [
+      "background/pref.js",
+      "background/pref_default.js"
+    ]
+  },
+
+  "options_ui": {
+    "open_in_tab": false,
+    "page": "options/options.html"
+  }
+}
+

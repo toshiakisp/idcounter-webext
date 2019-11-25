@@ -1,5 +1,6 @@
 "use strict";
 
+var global = this;
 
 /**** カスタマイズ ****/
 var USE_THREAKI_SIGN = true; // スレあきのIDに印を付ける
@@ -352,7 +353,7 @@ function appendFIDCStatus(target) {
     if (i!=0) conf.appendChild(document.createTextNode(', '));
     var a = document.createElement('a');
     a.setAttribute('__var',confs[i].varname);
-    if ( eval(confs[i].varname) ) {
+    if (global[confs[i].varname]) {
       a.setAttribute('class','webext_fidc_conf_enb');
     }else{
       a.setAttribute('class','webext_fidc_conf_dis');
@@ -391,10 +392,10 @@ function togglePopupConf(ev) {
   if (!varname) return;
   if (c == 'webext_fidc_conf_enb') {
     ev.target.setAttribute('class','webext_fidc_conf_dis');
-    eval(varname+'=false');
+    global[varname] = false;
   } else if (c == 'webext_fidc_conf_dis') {
     ev.target.setAttribute('class','webext_fidc_conf_enb');
-    eval(varname+'=true');
+    global[varname] = true;
   } else {
     return;
   }

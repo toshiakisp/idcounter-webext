@@ -234,12 +234,12 @@ function appendIdCounter(target, id, count, optTotal) {
   if (count > 0) {
     e.setAttribute('id','webext_fidc_id'+id+'_'+count);
     e.setAttribute('__webext_fidc_count',count);
-    e.innerHTML = label;
+    e.textContent = label;
   }
   if (USE_SOLO_ID_EXCEPTION && count == 1 && optTotal == 1) {
-    suspendNodeInnerHTML(e);
+    hideCounter(e);
   } else if (count > 0) {
-    putbackNodeInnerHTML(e);
+    showCounter(e);
   }
   if (optTotal > 0) {
     e.setAttribute('title','全'+optTotal+'レス');
@@ -265,14 +265,14 @@ function appendIdCounter(target, id, count, optTotal) {
   return e;
 }
 
-function suspendNodeInnerHTML(node) {
-  node.setAttribute('__text', node.innerHTML);
-  node.innerHTML = null;
+function hideCounter(node) {
+  node.setAttribute('__text', node.textContent);
+  node.textContent = "";
   return node;
 }
-function putbackNodeInnerHTML(node) {
+function showCounter(node) {
   if (!node.hasAttribute('__text')) return node;
-  node.innerHTML = node.getAttribute('__text');
+  node.textContent = node.getAttribute('__text');
   node.removeAttribute('__text');
   return node;
 }
@@ -315,7 +315,20 @@ function appendFIDCStatus(target) {
   if (e) return;
   var div = document.createElement('div');
   div.setAttribute('id','webext_fidc_status');
-  div.innerHTML='<b>'+gIdentifier+'カウンタ:</b> ユニーク<span id="webext_fidc_uid">?</span> (単発<span id="webext_fidc_soloid">?</span>)';//
+  var b = document.createElement('b');
+  b.textContent = gIdentifier+'カウンタ:';
+  div.appendChild(b);
+  div.appendChild(document.createTextNode(' ユニーク'));
+  b = document.createElement('span');
+  b.textContent = '?';
+  b.id = 'webext_fidc_uid';
+  div.appendChild(b);
+  div.appendChild(document.createTextNode(' (単発'));
+  b = document.createElement('span');
+  b.textContent = '?';
+  b.id = 'webext_fidc_soloid';
+  div.appendChild(b);
+  div.appendChild(document.createTextNode(')'));
   
   //操作ボタンを生成
   var buttons = [
@@ -328,7 +341,7 @@ function appendFIDCStatus(target) {
     var a = document.createElement('a');
     a.setAttribute('class','webext_fidc_a_btn');
     a.setAttribute('title',buttons[i].desc);
-    a.innerHTML=buttons[i].label;
+    a.textContent = buttons[i].label;
     a.addEventListener('click',buttons[i].func,false);
     div.appendChild(a);
   }
@@ -358,7 +371,7 @@ function appendFIDCStatus(target) {
     }else{
       a.setAttribute('class','webext_fidc_conf_dis');
     }
-    a.innerHTML=confs[i].label;
+    a.textContent = confs[i].label;
     if ('desc' in confs[i]) a.setAttribute('title',confs[i].desc);
     a.addEventListener('click',togglePopupConf,false);
     conf.appendChild(a);
@@ -622,7 +635,7 @@ function appendTargetIdNoInPopup(popup,id,count,no) {
   var res = createResElementByFIDC(id,count,no);
   if (res) {
     var div_title = document.createElement('div');
-    div_title.innerHTML = gIdentifier+':'+id+' No.'+no;
+    div_title.textContent = gIdentifier+':'+id+' No.'+no;
     popup.appendChild(div_title);
     popup.appendChild(res);
     appendPopupFooter(popup,id,count);
@@ -658,7 +671,7 @@ function appendFirstIdInPopup(popup,id,baseCount) {
   }
   if (res) {
     var div_title = document.createElement('div');
-    div_title.innerHTML = gIdentifier+':'+id+' の最初のレス '+info;
+    div_title.textContent = gIdentifier+':'+id+' の最初のレス '+info;
     popup.appendChild(div_title);
     popup.appendChild(res);
     appendPopupFooter(popup,id,baseCount,total);
@@ -679,7 +692,7 @@ function appendPopupFooter(popup,id,optCount,optTotal) {
   if (optCount > 0) {
     a = document.createElement('a');
     a.setAttribute('class','webext_fidc_a_btn');
-    a.innerHTML = '前';
+    a.textContent = '前';
     a.setAttribute('__webext_fidc_id',id);
     a.setAttribute('__webext_fidc_count',optCount);
     a.setAttribute('title','この'+gIdentifier+'の前の出現位置へスクロールします(カウンタShift+クリックと同じ)');
@@ -692,9 +705,9 @@ function appendPopupFooter(popup,id,optCount,optTotal) {
   a.setAttribute('__webext_fidc_id',id);
   if (optCount > 0) a.setAttribute('__webext_fidc_count',optCount);
   if (optTotal > 0) {
-    a.innerHTML = '全て表示(全'+optTotal+'個)';
+    a.textContent = '全て表示(全'+optTotal+'個)';
   } else {
-    a.innerHTML = 'レスを全て表示';
+    a.textContent = 'レスを全て表示';
   }
   a.addEventListener('click',reloadPopupWithOtherRes,false);
   div.appendChild(a);
@@ -702,7 +715,7 @@ function appendPopupFooter(popup,id,optCount,optTotal) {
   if (optCount > 0) {
     a = document.createElement('a');
     a.setAttribute('class','webext_fidc_a_btn');
-    a.innerHTML = '次';
+    a.textContent = '次';
     a.setAttribute('__webext_fidc_id',id);
     a.setAttribute('__webext_fidc_count',optCount);
     a.setAttribute('title','この'+gIdentifier+'の次の出現位置へスクロールします(カウンタクリックと同じ)');
@@ -730,9 +743,9 @@ function appendOtherIdsInPopup(popup,id,count,optIncludeAll) {
   var total = countTotalValidIDC(id);
   var divHeader = document.createElement('div');
   if (count > 0 && !optIncludeAll) {
-    divHeader.innerHTML = gIdentifier+':'+id+' のその他のレス (全'+total+'個)';
+    divHeader.textContent = gIdentifier+':'+id+' のその他のレス (全'+total+'個)';
   } else {
-    divHeader.innerHTML = gIdentifier+':'+id+' のレス (全'+total+'個)';
+    divHeader.textContent = gIdentifier+':'+id+' のレス (全'+total+'個)';
   }
   popup.appendChild(divHeader);
   var elmOrigin = divHeader;
@@ -741,7 +754,15 @@ function appendOtherIdsInPopup(popup,id,count,optIncludeAll) {
     if (i == count){//ポップアップ元の印
       if (!optIncludeAll) {
         e = document.createElement('table');
-        e.innerHTML = '<tr><td>…</td><td>≪</td></tr>';
+        // <tr><td>…</td><td>≪</td></tr>
+        var tr = document.createElement('tr');
+        e.appendChild(tr);
+        var td = document.createElement('td');
+        td.textContent = '…';
+        tr.appendChild(td);
+        td = document.createElement('td');
+        td.textContent = '≪';
+        tr.appendChild(td);
       }
       else {
         e = createResElementByFIDC(id,i);
@@ -806,11 +827,23 @@ function createResElementByFIDC(id,count,optNo) {
 
   var e_ref = getElementByTagNameInAncestors(e,'TD');
   if (e_ref){
-    tab.innerHTML = '<tr><td>…</td><td>'+e_ref.innerHTML+'</td></tr>';
+    var tr = document.createElement('tr');
+    tab.appendChild(tr);
+    var td = document.createElement('td');
+    td.textContent = '…';
+    tr.appendChild(td);
+    var td2 = e_ref.cloneNode(true);
+    td = document.createElement('td');
+    while (td2.firstChild) {
+      td.appendChild(td2.firstChild);
+    }
+    tr.appendChild(td);
   } else { //スレ文
     e_ref = e.parentNode;
-    tab.innerHTML = '<tr><td></td></tr>';
-    var td = tab.getElementsByTagName('td')[0];
+    var tr = document.createElement('tr');
+    tab.appendChild(tr);
+    var td = document.createElement('td');
+    tr.appendChild(td);
     var e_to = document.evaluate('blockquote',e_ref,null,XPathResult.FIRST_ORDERED_NODE_TYPE ,null).singleNodeValue;
     var e_from = document.evaluate('text()[.="画像ファイル名："]',e_ref,null,XPathResult.FIRST_ORDERED_NODE_TYPE ,null).singleNodeValue;
     if (!e_from) e_from = document.evaluate('input',e_ref,null,XPathResult.FIRST_ORDERED_NODE_TYPE ,null).singleNodeValue;
@@ -822,7 +855,9 @@ function createResElementByFIDC(id,count,optNo) {
         if (e_ref.childNodes[i] == e_to) break;
       }
     } else {
-      td.innerHTML = '<blockquote>ERROR in createResElementByFIDC()</blockquote>';
+      var bq = document.createElement('blockquote');
+      bq.textContent = 'ERROR in createResElementByFIDC()';
+      td.appendChild(bq);
     }
   }
 
@@ -847,7 +882,7 @@ function createResElementByFIDC(id,count,optNo) {
     idc.setAttribute('class','webext_fidc_aj');
     idc.setAttribute('title','このレスにスクロール');
     idc.removeAttribute('id');
-    putbackNodeInnerHTML(idc);//透明解除
+    showCounter(idc);
     idc.addEventListener('click',jumpToThisFID,false);
   }
 

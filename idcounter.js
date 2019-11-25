@@ -840,6 +840,8 @@ function createResElementByFIDC(id,count,optNo) {
     tr.appendChild(td);
   } else { //スレ文
     e_ref = e.parentNode;
+    if (e_ref.matches('.cnw')) //hack for new layout 2019/11
+      e_ref = e_ref.parentNode;
     var tr = document.createElement('tr');
     tab.appendChild(tr);
     var td = document.createElement('td');

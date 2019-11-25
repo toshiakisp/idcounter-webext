@@ -20,19 +20,30 @@ var WORK_IN_NON_ID_THREAD = true; // 非IDスレでもIDをカウントしたり
 ////
 
 // スレのHTML構造の要点(XPath)
-var gXpathMainForm = '/html/body/form[@action and not(@enctype)]';
+var gXpathMainForm = '/html/body';
 var gXpathThreContainer = gXpathMainForm+'/div[@class="thre"]';
-var gXpathThreInput = gXpathThreContainer+'/input[@type="checkbox"]';
+var gXpathThreSign = gXpathThreContainer+'/span[starts-with(@id,"delcheck")]/following-sibling::span[@class="cnw"]/text()';
 var gXpathReplyTables = gXpathThreContainer+'/table';
-var gXpathAppendStatusAfter = gXpathMainForm+'/hr[following-sibling::div[@class="delform"]]/preceding-sibling::*[1]';
+var gXpathReplySign = gXpathReplyTables+'//td[@class="rtd"]/span[@class="cnw"]/text()';
+var gXpathAppendStatusAfter = gXpathThreContainer+'/following-sibling::hr[following-sibling::div[@id="ufm"]]/preceding-sibling::*[1]';
 
 function tuneXpathPatterns () {
   // XPathのテスト＆旧仕様への対応
   if (!document.evaluate(gXpathThreContainer,document,null,XPathResult.FIRST_ORDERED_NODE_TYPE,null).singleNodeValue) {
+    // 2019/11月のレイアウト変更より前か
+    gXpathMainForm = '/html/body/form[@action and not(@enctype)]';
+    gXpathThreContainer = gXpathMainForm+'/div[@class="thre"]';
+    gXpathThreSign = gXpathThreContainer+'/input[@type="checkbox"]/following-sibling::text()';
+    gXpathReplyTables = gXpathThreContainer+'/table';
+    gXpathReplySign = gXpathReplyTables+'//td/input[@type="checkbox"]/following-sibling::text()';
+    gXpathAppendStatusAfter = gXpathMainForm+'/hr[following-sibling::div[@class="delform"]]/preceding-sibling::*[1]';
+  }
+  if (!document.evaluate(gXpathThreContainer,document,null,XPathResult.FIRST_ORDERED_NODE_TYPE,null).singleNodeValue) {
     // 2016/5月末のレイアウト変更の前の様式に調整
     gXpathThreContainer = gXpathMainForm;
-    gXpathThreInput = gXpathThreContainer+'/input[@type="checkbox"]';
+    gXpathThreSign = gXpathThreContainer+'/input[@type="checkbox"]/following-sibling::text()';
     gXpathReplyTables = gXpathThreContainer+'/table';
+    gXpathReplySign = gXpathReplyTables+'//td/input[@type="checkbox"]/following-sibling::text()';
   }
   if (!document.evaluate(gXpathAppendStatusAfter,document,null,XPathResult.FIRST_ORDERED_NODE_TYPE,null).singleNodeValue) {
     gXpathAppendStatusAfter = gXpathMainForm+'/br[@clear="left"]';
@@ -82,7 +93,7 @@ function getNodeBefore(node) {
 
 
 function scanThreakiId(){
-  var xpathThreSign = gXpathThreInput+'/following-sibling::text()[contains(normalize-space(.)," ID:") or starts-with(normalize-space(.),"ID:")]';
+  var xpathThreSign = gXpathThreSign+'[contains(normalize-space(.)," ID:") or starts-with(normalize-space(.),"ID:")]';
   var text = document.evaluate(xpathThreSign,document,null,XPathResult.FIRST_ORDERED_NODE_TYPE ,null).singleNodeValue;
   if (!text) {
     xpathThreSign = xpathThreSign.replace(/ID:/g,'IP:');
@@ -135,7 +146,7 @@ function scanId() {
   }
 
   //ID探索&カウンタ挿入ループ(破壊的)
-  var eRes = document.evaluate(gXpathReplyTables+'//td/input[@type="checkbox"]/following-sibling::text()[contains(.,"'+gIdentifier+':")]',document,null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null);
+  var eRes = document.evaluate(gXpathReplySign+'[contains(.,"'+gIdentifier+':")]',document,null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null);
   for (var i=0; i < eRes.snapshotLength; i++) {
     var t = eRes.snapshotItem(i);
     var n = t.nodeValue.indexOf(gIdentifier+':');
@@ -146,7 +157,6 @@ function scanId() {
       t.nodeValue = t.nodeValue + ' ';
     }
     var id = t.nodeValue.substring(n+3,nn);
-    var no = document.evaluate('preceding-sibling::input',t,null,XPathResult.FIRST_ORDERED_NODE_TYPE,null).singleNodeValue.name;
     if (id in idCounts) {
       idCounts[id]++;
       if (!USE_ID_POPUP) idOtherNodes[id+'-'+idCounts[id]] = t;
@@ -159,7 +169,7 @@ function scanId() {
     // IDカウンタ挿入
     if ( t.nodeValue.indexOf(' No.',n) >= 0 ) {
       t.splitText(nn+1); //注：赤福動作後は日時+IDとNo.が既に別テキストノードっぽい。同じ場所で切る。
-    } else if (t.nextSibling.className == 'webext_fidc_a') {
+    } else if (t.nextSibling && t.nextSibling.className == 'webext_fidc_a') {
       continue; //既にIDカウンタがある場合はそのままにしておく
     }
     if ( idCounts[id] > 1 ) {
@@ -209,13 +219,16 @@ function appendIdCounter(target, id, count, optTotal) {
   var idThreaki = (gIdcThreaki ? gIdcThreaki.getAttribute('__webext_fidc_id') : '');
   var label = '[' + count + (USE_THREAKI_SIGN && id==idThreaki ? THREAKI_SIGN+'] ' : '] ');
   var e;
-  if (target.nextSibling.className == 'webext_fidc_a') {
+  if (target.nextSibling && target.nextSibling.className == 'webext_fidc_a') {
     e = target.nextSibling; //既存カウンタをターゲット
   } else {
     e = document.createElement('a');
     e.setAttribute('class','webext_fidc_a');
     e.setAttribute('__webext_fidc_id',id);
-    target.parentNode.insertBefore(e,target.nextSibling);
+    if (target.nextSibling)
+      target.parentNode.insertBefore(e,target.nextSibling);
+    else
+      target.parentNode.appendChild(e);
   }
   if (count > 0) {
     e.setAttribute('id','webext_fidc_id'+id+'_'+count);
@@ -969,7 +982,6 @@ function startup() {
   if (form) {
     var timer = null;
     setTimeout(function(e){
-      if (e.tagName != 'FORM') console.error('idScanOnModified() was registered as an event listener of %s, not of "FORM".',e.tagName);
       var obs = new MutationObserver(function(records){
         records.forEach(function(record){
           for (var i=0; i < record.addedNodes.length; i++) {

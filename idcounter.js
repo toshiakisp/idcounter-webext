@@ -967,22 +967,18 @@ function startup() {
   //レスの動的追加時に再スキャンするようイベント登録 (赤福の「続きを読む」などへの対応)
   var form = document.evaluate(gXpathMainForm,document,null,XPathResult.FIRST_ORDERED_NODE_TYPE ,null).singleNodeValue;
   if (form) {
-    var timer;
-    function idScanOnModified(target) {
-      if(target.nodeName != 'TABLE') {
-        return; //追加されたレス以外はスルー
-      }
-      //console.info('idScanOnModified() called for a TABLE.');
-      clearTimeout(timer); //scanIdを無駄に何度も実行しないように(デバウンス)
-      timer = setTimeout(scanId, 100);
-    }
+    var timer = null;
     setTimeout(function(e){
       if (e.tagName != 'FORM') console.error('idScanOnModified() was registered as an event listener of %s, not of "FORM".',e.tagName);
       var obs = new MutationObserver(function(records){
         records.forEach(function(record){
           for (var i=0; i < record.addedNodes.length; i++) {
             // like DOMNodeInserted
-            idScanOnModified(record.addedNodes[i]);
+            if(record.addedNodes[i].nodeName == 'TABLE') {
+              //追加されたレス
+              clearTimeout(timer); //scanIdを無駄に何度も実行しないように(デバウンス)
+              timer = setTimeout(scanId, 100);
+            }
           }
         });
       });

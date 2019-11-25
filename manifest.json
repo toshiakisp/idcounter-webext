@@ -10,8 +10,7 @@
   "applications": {
 	"gecko": {
 	  "id": "idcounter-webext@toshiakisp.github.io",
-	  "strict_min_version": "45.0a1",
-	  "strict_max_version": "52.*",
+	  "strict_min_version": "50.0a1",
 	  "update_url": "https://toshiakisp.github.io/akahuku-firefox-sp/idcounter_updates.json"
 	}
   },
